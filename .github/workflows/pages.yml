@@ -1,0 +1,42 @@
+# 把静态页面自动发布到 GitHub Pages。
+# 触发条件：推送到 main 分支，或在 Actions 页手动点 Run workflow。
+# 发布内容就是仓库根目录（一份 HTML，无需构建）。
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 授予 GITHUB_TOKEN 发布 Pages 所需的最小权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只允许一次部署；新的推送取消排队中的旧部署，但不打断正在进行的发布
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Pages
+        uses: actions/configure-pages@v5
+
+      - name: 打包站点（仓库根目录）
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: 发布
+        id: deployment
+        uses: actions/deploy-pages@v4

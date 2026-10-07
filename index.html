@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数字生命态度量表 · 自我测评</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+<style>
+  /* ===== 重置 & 基础 ===== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', 'Microsoft YaHei', 'PingFang SC', -apple-system, sans-serif;
+    background: #080e18;
+    color: #e8edf2;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.5s ease;
+  }
+  body.result-mode {
+    background: #080e18;
+  }
+
+  /* ===== 动态背景 ===== */
+  .bg-animation {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+  .bg-animation.active { opacity: 1; }
+  .bg-animation .wave {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background: radial-gradient(ellipse at 30% 50%, rgba(74, 208, 234, 0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(232, 184, 76, 0.03) 0%, transparent 50%);
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+  .bg-animation .wave:nth-child(2) {
+    animation-duration: 24s;
+    animation-delay: -6s;
+    background: radial-gradient(ellipse at 60% 30%, rgba(74, 208, 234, 0.05) 0%, transparent 55%);
+  }
+  @keyframes drift {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    100% { transform: translate(8%, 6%) scale(1.1) rotate(4deg); }
+  }
+
+  .hero, section, .navbar, footer { position: relative; z-index: 1; }
+
+  /* ===== CSS 变量 ===== */
+  :root {
+    --ink: #e8edf2;
+    --muted: #8aa3b9;
+    --line: rgba(200, 215, 230, 0.15);
+    --panel: rgba(14, 26, 42, 0.78);
+    --accent: #4ad0ea;
+    --accent-2: #e8b84c;
+    --bg: #080e18;
+    --font: 'Inter', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0a121f; }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 999px; }
+
+  /* ===== Hero ===== */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.85) contrast(1.05);
+  }
+  .hero-bg-fallback {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, #0f1a2e 0%, #040b14 100%);
+    display: none;
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(4,8,14,0.35), rgba(4,8,14,0.72) 68%, rgba(4,8,14,0.92));
+  }
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+    padding: 24px;
+    max-width: 900px;
+  }
+  .eyebrow {
+    display: inline-block;
+    padding: 6px 20px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 1px;
+    margin-bottom: 22px;
+    backdrop-filter: blur(6px);
+    background: rgba(14, 26, 42, 0.3);
+  }
+  .hero h1 {
+    font-size: clamp(34px, 6vw, 62px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 18px;
+    text-shadow: 0 0 40px rgba(74, 208, 234, 0.08);
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero .subtitle {
+    font-size: clamp(15px, 1.6vw, 18px);
+    color: var(--muted);
+    max-width: 780px;
+    margin: 0 auto 34px;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .btn {
+    display: inline-block;
+    padding: 15px 46px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #041018;
+    background: var(--accent);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 10px 34px rgba(74, 208, 234, 0.3);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 42px rgba(74, 208, 234, 0.45);
+  }
+  .btn:active { transform: scale(0.97); }
+  .scroll-hint {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--muted);
+    font-size: 12px;
+    z-index: 2;
+    letter-spacing: 2px;
+    opacity: 0.6;
+  }
+
+  /* ===== 导航栏 ===== */
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(14px) saturate(1.3);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+    background: rgba(8, 14, 24, 0.7);
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    max-width: 780px;
+    margin: 0 auto;
+    display: flex;
+    gap: 32px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .nav-inner a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    padding: 4px 0;
+    border-bottom: 2px solid transparent;
+  }
+  .nav-inner a:hover,
+  .nav-inner a.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  .nav-inner a.active { color: var(--accent); }
+
+  /* ===== Sections ===== */
+  section {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 56px 20px;
+  }
+  .section-head {
+    margin-bottom: 28px;
+  }
+  .section-head h2 {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  .section-head p {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  /* ===== 卡片 ===== */
+  .panel {
+    background: var(--panel);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 32px 30px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .panel:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  /* ===== 每个题目独立卡片 ===== */
+  .item-panel {
+    background: var(--panel);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 26px 28px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.3s ease;
+  }
+  .item-panel:hover {
+    border-color: rgba(74, 208, 234, 0.25);
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.4);
+  }
+
+  /* ===== 题目文字 ===== */
+  .item-panel .item-text {
+    font-size: 17px;
+    font-weight: 450;
+    margin-bottom: 18px;
+    line-height: 1.8;
+  }
+  .item-panel .item-text .num {
+    display: inline-block;
+    min-width: 36px;
+    height: 36px;
+    line-height: 36px;
+    text-align: center;
+    border-radius: 50%;
+    background: rgba(74, 208, 234, 0.12);
+    color: var(--accent);
+    font-size: 19px;
+    font-weight: 700;
+    margin-right: 14px;
+    vertical-align: middle;
+  }
+
+  /* ===== 指导语 ===== */
+  .intro-box {
+    font-size: 14px;
+    color: #c6d7e6;
+  }
+  .intro-box strong {
+    color: var(--ink);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .intro-box .def {
+    display: block;
+    margin: 10px 0 14px;
+    padding: 14px 18px;
+    border-left: 3px solid var(--accent);
+    background: rgba(74, 208, 234, 0.06);
+    border-radius: 0 10px 10px 0;
+    font-size: 13.5px;
+    line-height: 1.8;
+  }
+  .intro-box .scale-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .intro-box .scale-hint b {
+    color: var(--ink);
+  }
+
+  /* ===== 选项量表 ===== */
+  .scale {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    padding: 16px 18px;
+    border-radius: 14px;
+    transition: background 0.4s ease, border-color 0.4s ease;
+  }
+  .scale label {
+    cursor: pointer;
+    text-align: center;
+    padding: 14px 8px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--muted);
+    user-select: none;
+    background: rgba(255, 255, 255, 0.03);
+    position: relative;
+  }
+  .scale label:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(74, 208, 234, 0.15);
+    border-color: var(--accent);
+    color: var(--ink);
+    background: rgba(74, 208, 234, 0.06);
+  }
+  .scale input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .scale label.selected {
+    background: rgba(74, 208, 234, 0.25);
+    border-color: var(--accent);
+    color: #ffffff;
+    box-shadow: 0 0 30px rgba(74, 208, 234, 0.12), inset 0 0 30px rgba(74, 208, 234, 0.06);
+    transform: translateY(-2px);
+  }
+  .scale label:active { transform: scale(0.94); }
+
+  /* ===== 警告 & 按钮 ===== */
+  .warn {
+    color: var(--accent-2);
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 12px;
+    display: none;
+  }
+  .center-btn {
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  /* ===== 结果页 ===== */
+  .result-hidden { display: none; }
+  .result-panel {
+    text-align: center;
+    padding: 36px 30px;
+  }
+  .result-panel .tag {
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .result-panel .profile {
+    font-size: 34px;
+    font-weight: 700;
+    margin: 12px 0 18px;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+  .result-panel .profile::before {
+    content: "✦ ";
+    color: var(--accent-2);
+    font-size: 30px;
+  }
+  .result-panel .desc {
+    text-align: left;
+    font-size: 14px;
+    color: #c6d7e6;
+    max-width: 560px;
+    margin: 0 auto 20px;
+    line-height: 1.8;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 16px 20px;
+    border-radius: 12px;
+    border-left: 3px solid var(--accent-2);
+  }
+
+  /* ===== 维度条 ===== */
+  .dim-bars {
+    max-width: 560px;
+    margin: 26px auto 0;
+    text-align: left;
+  }
+  .bar-row {
+    margin-bottom: 18px;
+  }
+  .bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--muted);
+  }
+  .bar-label span:first-child { color: var(--ink); }
+  .bar-track {
+    height: 10px;
+    background: rgba(234, 242, 248, 0.07);
+    border-radius: 999px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  .bar-fill {
+    height: 100%;
+    width: 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2aa8c4, #4ad0ea, #6ad8f0);
+    box-shadow: 0 0 16px rgba(74, 208, 234, 0.25);
+    transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* ===== 维度解释 ===== */
+  .dim-explain {
+    max-width: 560px;
+    margin: 24px auto 0;
+    text-align: left;
+    font-size: 13px;
+    color: var(--muted);
+    background: rgba(255,255,255,0.03);
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+  .dim-explain p {
+    margin-bottom: 6px;
+  }
+  .dim-explain p:last-child { margin-bottom: 0; }
+  .dim-explain strong {
+    color: var(--ink);
+  }
+
+  /* ===== 分享按钮 ===== */
+  .share-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    padding: 10px 28px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    margin-top: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .share-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--ink);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(74, 208, 234, 0.08);
+  }
+  .share-btn:active { transform: scale(0.97); }
+
+  /* ===== 关于 / 资源占位 ===== */
+  .placeholder-section {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .placeholder-section h3 {
+    color: var(--ink);
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  /* ===== Footer ===== */
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 32px 20px 48px;
+    border-top: 1px solid var(--line);
+    margin-top: 20px;
+    opacity: 0.6;
+  }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 560px) {
+    .scale { grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 12px 10px; }
+    .scale label { font-size: 15px; padding: 12px 4px; }
+    section { padding: 40px 16px; }
+    .panel { padding: 24px 18px; }
+    .item-panel { padding: 20px 16px; }
+    .item-panel .item-text { font-size: 15px; }
+    .item-panel .item-text .num {
+      min-width: 30px;
+      height: 30px;
+      line-height: 30px;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    .nav-inner { gap: 20px; font-size: 13px; }
+    .result-panel .profile { font-size: 26px; }
+    .result-panel .profile::before { font-size: 22px; }
+    .hero .subtitle {
+      white-space: normal;
+      font-size: 14px;
+      max-width: 90%;
+    }
+  }
+  @media (max-width: 400px) {
+    .scale { gap: 5px; padding: 8px 6px; }
+    .scale label { font-size: 13px; padding: 10px 2px; }
+    .item-panel .item-text { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 动态背景 ===== -->
+<div class="bg-animation" id="bgAnimation">
+  <div class="wave"></div>
+  <div class="wave"></div>
+</div>
+
+<!-- ===== 导航栏 ===== -->
+<nav class="navbar" id="top-nav">
+  <div class="nav-inner">
+    <a href="#quiz" class="active">测评</a>
+    <a href="#about">关于</a>
+    <a href="#resources">资源</a>
+  </div>
+</nav>
+
+<!-- ===== Hero ===== -->
+<header class="hero" id="top">
+  <img class="hero-bg" src="grief_ai_afterlife_bot.gif" alt="数字生命主题动图" onerror="this.style.display='none'; document.querySelector('.hero-bg-fallback').style.display='block';">
+  <div class="hero-bg-fallback"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-inner">
+    <div class="eyebrow">Digital Life Attitude Scale</div>
+    <h1>数字生命<span>态度量表</span></h1>
+    <p class="subtitle">探索你对数字生命的认知、情绪、意义与伦理态度，完成测评后即可获得专属态度剖面。</p>
+    <a class="btn" href="#quiz">开始测量</a>
+  </div>
+  <div class="scroll-hint">↓ 下滑开始</div>
+</header>
+
+<!-- ===== 测评区 ===== -->
+<section id="quiz">
+  <div class="section-head">
+    <h2>正式测评</h2>
+    <p>共 20 题，预计用时 3-5 分钟</p>
+  </div>
+
+  <div class="panel intro-box">
+    <strong>📖 指导语</strong>
+    <span class="def">数字生命是指一个人的全部大脑信息（包括记忆、人格、思维方式等）完整上传至网络后，在网络世界中形成的一个具有持续生命力的数字存在；它不仅完整复制了原始个体当前的全部意识内容，还能在此后的时间里持续学习、自我更新、与外界互动、生成新的记忆，并在此基础上不断推动自我演化。</span>
+    请基于对上述定义的真实理解与个人感受，逐题阅读陈述句，并根据你的同意程度选择：
+    <span class="scale-hint"><b>1=非常不同意</b> · <b>2=不太同意</b> · <b>3=不确定</b> · <b>4=比较同意</b> · <b>5=非常同意</b></span>
+  </div>
+
+  <div id="quiz-items"></div>
+  <div class="center-btn"><button class="btn" onclick="submit()">查看我的态度剖面</button></div>
+  <div class="warn" id="warn">⚠️ 请完成所有题目后再提交</div>
+</section>
+
+<!-- ===== 结果区 ===== -->
+<section id="result" class="result-hidden">
+  <div class="panel result-panel">
+    <div class="tag">你的数字生命态度剖面</div>
+    <div class="profile" id="pname"></div>
+    <div class="desc" id="pdesc"></div>
+    <div class="dim-bars">
+      <div class="bar-row"><div class="bar-label"><span>生命性感知 (AP)</span><span id="vAP"></span></div><div class="bar-track"><div class="bar-fill" id="bAP"></div></div></div>
+      <div class="bar-row"><div class="bar-label"><span>情感趋避 (AA)</span><span id="vAA"></span></div><div class="bar-track"><div class="bar-fill" id="bAA"></div></div></div>
+      <div class="bar-row"><div class="bar-label"><span>意义感知 (PM)</span><span id="vPM"></span></div><div class="bar-track"><div class="bar-fill" id="bPM"></div></div></div>
+      <div class="bar-row"><div class="bar-label"><span>伦理接纳 (EA)</span><span id="vEA"></span></div><div class="bar-track"><div class="bar-fill" id="bEA"></div></div></div>
+    </div>
+    <!-- 维度解释 -->
+    <div class="dim-explain">
+      <p><strong>生命性感知 (AP)</strong> — 反映你对数字生命是否具备“生命”属性的认知判断，得分越高表示越倾向于将数字生命视为真正的生命形态。</p>
+      <p><strong>情感趋避 (AA)</strong> — 反映你对数字生命在情绪层面的亲近或排斥，得分越高表示情绪上越接纳、越少不安与威胁感。</p>
+      <p><strong>意义感知 (PM)</strong> — 反映你对数字生命是否具有存在意义的判断，得分越高表示越认为数字生命是一种有意义的存在形式。</p>
+      <p><strong>伦理接纳 (EA)</strong> — 反映你对数字生命技术伦理前景的态度，得分越高表示越倾向于认为其伦理风险可控、值得开放接纳。</p>
+    </div>
+  </div>
+  <div class="center-btn"><button class="btn" onclick="location.reload()">重新测评</button></div>
+</section>
+
+<!-- ===== 关于占位 ===== -->
+<section id="about" style="padding-top: 20px;">
+  <div class="panel placeholder-section">
+    <h3>📘 关于本量表</h3>
+    <p>数字生命态度量表（DLAS）基于认知-情绪-意义-伦理四维度框架设计（生命性感知、情感趋避、意义感知、伦理接纳），用于探索个体对数字生命概念的多层次态度。</p>
+    <p style="margin-top: 8px; font-size: 13px;">本测评仅供自我探索与学术参考使用。</p>
+  </div>
+</section>
+
+<!-- ===== 资源占位 ===== -->
+<section id="resources" style="padding-top: 0;">
+  <div class="panel placeholder-section">
+    <h3>📚 延伸资源</h3>
+    <p>数字生命伦理 · 意识上传哲学 · AI 与人格权</p>
+    <p style="margin-top: 8px; font-size: 13px;">更多内容即将上线，敬请期待。</p>
+  </div>
+</section>
+
+<footer>数字生命态度量表 · 仅供自我探索参考</footer>
+
+<script>
+// ============================================================
+// 数据配置（根据最新量表更新）
+// ============================================================
+
+// 维度定义（20题，删除原第1题，编号顺延）
+const DIM = {
+  AP: { name: "生命性感知", items: [5, 9, 13, 17] },   // 原 6,10,14,18
+  AA: { name: "情感趋避", items: [1, 4, 6, 10, 14, 18] }, // 原 2,5,7,11,15,19
+  PM: { name: "意义感知", items: [2, 7, 11, 15, 19] },  // 原 3,8,12,16,20
+  EA: { name: "伦理接纳", items: [3, 8, 12, 16, 20] }   // 原 4,9,13,17,21
+};
+
+// 反向计分题（10题，编号已调整）
+const REVERSED = new Set([6, 7, 10, 11, 13, 14, 15, 17, 18, 19]);
+
+// 题目文本（20题）
+const TEXTS = {
+  1: "我愿意去了解数字生命相关的信息",
+  2: "即使数字生命不同于生物生命，它也是一种有意义的存在形式",
+  3: "数字生命像AI一样是科技发展到一定程度的必然结果，会被大众接纳",
+  4: "即使有数字生命的存在，我也是独特的",
+  5: "数字生命和生物生命形态不同，但本质相似",
+  6: "生命以数字形式存在，让我感到某种深层的不安和排斥",
+  7: "数字生命只是一个技术新概念，对我来说没什么值得深究的意义",
+  8: "在严格监管的前提下，数字生命技术的研发是合乎伦理的",
+  9: "数字生命可以被视作真正意义上的生命",
+  10: "数字生命的想法违背了自然规律，让我感到不适",
+  11: "这种事情和我自己的生活离得太远，我不觉得它有什么实际意义",
+  12: "我们应该以更加开放的姿态看待数字生命技术的伦理前景",
+  13: "数字生命与真正意义上的生命有着根本区别",
+  14: "数字生命让我感到自己的存在受到了威胁",
+  15: "意识以数据形式存在，对我个人没有真正的意义",
+  16: "我认为数字生命技术的伦理风险是可控的，不必过度担忧",
+  17: "数字形式的存在只能无限接近但永远无法成为生命",
+  18: "如果有天我和一个数字生命进行交流，我会有一种疏离感",
+  19: "讨论数字生命的意义，是一种脱离现实的空谈",
+  20: "数字生命技术带来的好处，远大于它可能引发的伦理问题"
+};
+
+// ============================================================
+// 五类剖面（基于提供的均值数据）
+// ============================================================
+const PROFILES = [
+  {
+    name: "全面低接纳型",
+    center: { AP: 1.96, AA: 2.13, PM: 2.41, EA: 2.06 },
+    desc: "你在所有维度上都表现出最低的接纳水平：你不倾向于将数字生命视为真正的生命，情绪上较为排斥，对其意义和伦理前景也持高度怀疑态度。你是数字生命理念的坚定质疑者。"
+  },
+  {
+    name: "保守保留型",
+    center: { AP: 2.53, AA: 2.71, PM: 3.39, EA: 2.78 },
+    desc: "你对数字生命整体持保守、保留的立场。你在生命性感知、情感趋避和伦理接纳上都较为谨慎，但对「意义感知」相对偏高——你可能认为数字生命虽然有意义，但在其他层面仍需更多审慎考量。"
+  },
+  {
+    name: "全面积极型",
+    center: { AP: 3.61, AA: 4.32, PM: 4.41, EA: 4.29 },
+    desc: "你在所有维度上都表现出高度接纳：你倾向于认可数字生命是一种真正的生命形态，情绪上亲近开放，认为其具有深刻的存在意义，并对伦理前景持乐观态度。你是数字生命理念的坚定支持者。"
+  },
+  {
+    name: "认知接纳-意义存疑型",
+    center: { AP: 3.21, AA: 2.86, PM: 2.31, EA: 3.39 },
+    desc: "你在认知上相对认可数字生命的可能性（生命性感知较高），但在「意义感知」维度上得分明显偏低——你或许认为数字生命是一种技术上的存在，但对其是否具有「真正的意义」持保留或怀疑态度。"
+  },
+  {
+    name: "中性观望型",
+    center: { AP: 3.08, AA: 3.30, PM: 3.56, EA: 3.48 },
+    desc: "你对数字生命持整体中性、温和开放的态度。四个维度的得分均处于中等水平，你既不完全拥抱也不明确抗拒，更倾向于保持理性观察、等待更多证据与共识的建立。"
+  }
+];
+
+// ============================================================
+// 渲染逻辑
+// ============================================================
+
+const quizBox = document.getElementById("quiz-items");
+const order = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+const totalItems = order.length;
+
+// 计算渐变色工具函数
+function getGradientColor(progress) {
+  const blueIntensity = Math.sin(progress * Math.PI);
+  const r = Math.round(8 + 12 * blueIntensity);
+  const g = Math.round(20 + 40 * blueIntensity);
+  const b = Math.round(40 + 80 * blueIntensity);
+  const alpha = 0.35 + 0.25 * blueIntensity;
+  return { r, g, b, alpha, blueIntensity };
+}
+
+// 渲染题目
+order.forEach((n, index) => {
+  const div = document.createElement("div");
+  div.className = "item-panel";
+  div.innerHTML = `
+    <div class="item-text"><span class="num">${n}</span>${TEXTS[n]}</div>
+    <div class="scale" id="scale-${n}">
+      ${[1,2,3,4,5].map(v => `
+        <label data-q="${n}" data-v="${v}">
+          <input type="radio" name="q${n}" value="${v}">
+          <span>${v}</span>
+        </label>
+      `).join("")}
+    </div>
+  `;
+  quizBox.appendChild(div);
+
+  // 为每个 scale 设置渐变色背景
+  const scaleEl = document.getElementById(`scale-${n}`);
+  const progress = (index) / (totalItems - 1);
+  const { r, g, b, alpha, blueIntensity } = getGradientColor(progress);
+  scaleEl.style.background = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  scaleEl.style.border = `1px solid rgba(74, 208, 234, ${0.04 + 0.08 * blueIntensity})`;
+});
+
+// ===== 交互：点击选中 =====
+document.querySelectorAll(".scale label").forEach(label => {
+  label.addEventListener("click", () => {
+    const q = label.dataset.q;
+    const v = label.dataset.v;
+    const radio = document.querySelector(`input[name="q${q}"][value="${v}"]`);
+    if (radio) radio.checked = true;
+    document.querySelectorAll(`.scale label[data-q="${q}"]`).forEach(l => l.classList.remove("selected"));
+    label.classList.add("selected");
+  });
+});
+
+// ===== 页面背景跟随滚动渐变 =====
+function updateBodyBackground() {
+  const quizItems = document.querySelectorAll('.item-panel');
+  if (quizItems.length === 0) return;
+  let maxVisibility = 0, activeIndex = 0;
+  quizItems.forEach((item, idx) => {
+    const rect = item.getBoundingClientRect();
+    const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
+    if (visibleHeight > 0) {
+      const visibility = visibleHeight / rect.height;
+      if (visibility > maxVisibility) {
+        maxVisibility = visibility;
+        activeIndex = idx;
+      }
+    }
+  });
+  const progress = activeIndex / (totalItems - 1);
+  const { r, g, b } = getGradientColor(progress);
+  const bgR = Math.round(r * 0.5);
+  const bgG = Math.round(g * 0.5);
+  const bgB = Math.round(b * 0.5);
+  document.body.style.background = `rgb(${bgR}, ${bgG}, ${bgB})`;
+}
+
+// ===== 动态背景控制 =====
+const bgAnim = document.getElementById('bgAnimation');
+const quizSection = document.getElementById('quiz');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      bgAnim.classList.add('active');
+      document.body.classList.remove('result-mode');
+      window.addEventListener('scroll', updateBodyBackground);
+      updateBodyBackground();
+    } else {
+      bgAnim.classList.remove('active');
+      window.removeEventListener('scroll', updateBodyBackground);
+      if (!document.body.classList.contains('result-mode')) {
+        document.body.style.background = '#080e18';
+      }
+    }
+  });
+}, { threshold: 0.05 });
+observer.observe(quizSection);
+
+// ============================================================
+// 提交 & 计算
+// ============================================================
+
+function submit() {
+  const warn = document.getElementById("warn");
+  let scores = {};
+  let complete = true;
+  for (const n of order) {
+    const sel = document.querySelector(`input[name="q${n}"]:checked`);
+    if (!sel) { complete = false; break; }
+    let v = Number(sel.value);
+    if (REVERSED.has(n)) v = 6 - v;
+    scores[n] = v;
+  }
+  if (!complete) {
+    warn.style.display = "block";
+    document.getElementById("quiz").scrollIntoView({ behavior: "smooth" });
+    return;
+  }
+  warn.style.display = "none";
+
+  // 计算四维度均分
+  const dimMean = {};
+  for (const key in DIM) {
+    const arr = DIM[key].items.map(n => scores[n]);
+    dimMean[key] = arr.reduce((a,b) => a+b, 0) / arr.length;
+  }
+
+  // 欧几里得距离归类（五类）
+  let best = 0, bestD = Infinity;
+  PROFILES.forEach((p, i) => {
+    const c = p.center;
+    const d = Math.hypot(
+      dimMean.AP - c.AP,
+      dimMean.AA - c.AA,
+      dimMean.PM - c.PM,
+      dimMean.EA - c.EA
+    );
+    if (d < bestD) { bestD = d; best = i; }
+  });
+
+  const profile = PROFILES[best];
+  document.getElementById("pname").textContent = profile.name;
+  document.getElementById("pdesc").textContent = profile.desc;
+
+  const dims = ["AP","AA","PM","EA"];
+  dims.forEach(k => {
+    const val = dimMean[k];
+    document.getElementById("v" + k).textContent = val.toFixed(2);
+    document.getElementById("b" + k).style.width = (val / 5 * 100) + "%";
+  });
+
+  // 切换到结果模式
+  bgAnim.classList.remove('active');
+  window.removeEventListener('scroll', updateBodyBackground);
+  document.body.style.background = '#080e18';
+  document.body.classList.add('result-mode');
+
+  document.getElementById("quiz").style.display = "none";
+  document.getElementById("result").classList.remove("result-hidden");
+  document.getElementById("result").scrollIntoView({ behavior: "smooth" });
+
+  // 插入分享按钮
+  const resultPanel = document.querySelector('.result-panel');
+  if (!document.getElementById('shareBtnContainer')) {
+    const shareContainer = document.createElement('div');
+    shareContainer.id = 'shareBtnContainer';
+    shareContainer.style.marginTop = '10px';
+    shareContainer.innerHTML = `<button class="share-btn" onclick="shareResult()">📤 分享结果</button>`;
+    resultPanel.appendChild(shareContainer);
+  }
+}
+
+// ===== 分享功能 =====
+function shareResult() {
+  const profileName = document.getElementById("pname").textContent;
+  const text = `我在「数字生命态度量表」中的结果是：${profileName}。\n\n你也来测一测吧：${window.location.href}`;
+  if (navigator.share) {
+    navigator.share({
+      title: '数字生命态度量表结果',
+      text: text,
+    }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('✅ 结果已复制到剪贴板，可以分享给朋友了！');
+    }).catch(() => {
+      prompt('请复制以下结果分享：', text);
+    });
+  }
+}
+
+// ===== 导航高亮 =====
+document.addEventListener('scroll', () => {
+  const sections = ['quiz', 'about', 'resources'];
+  const navLinks = document.querySelectorAll('.nav-inner a');
+  let current = 'quiz';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      if (rect.top <= 120) current = id;
+    }
+  });
+  navLinks.forEach((link) => {
+    const href = link.getAttribute('href').replace('#', '');
+    link.classList.toggle('active', href === current);
+  });
+});
+
+// ===== 页面加载初始化 =====
+window.addEventListener('load', () => {
+  const rect = quizSection.getBoundingClientRect();
+  if (rect.top < window.innerHeight) {
+    bgAnim.classList.add('active');
+    window.addEventListener('scroll', updateBodyBackground);
+    updateBodyBackground();
+  }
+});
+</script>
+</body>
+</html>

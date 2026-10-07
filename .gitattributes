@@ -1,0 +1,15 @@
+# 统一换行符为 LF，避免不同系统 clone 后出现整文件 diff
+* text=auto eol=lf
+
+# 明确标记文本文件为 UTF-8，防止中文被按 GBK 误读
+*.html   text working-tree-encoding=UTF-8
+*.md     text working-tree-encoding=UTF-8
+*.mjs    text working-tree-encoding=UTF-8
+*.json   text working-tree-encoding=UTF-8
+LICENSE  text working-tree-encoding=UTF-8
+
+# 二进制文件不做换行符转换
+*.png  binary
+*.jpg  binary
+*.gif  binary
+*.ico  binary
